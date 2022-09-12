@@ -1,54 +1,185 @@
-CREATE DATABASE IF NOT EXISTS registro_estoque;
+CREATE DATABASE IF NOT EXISTS registroestoque;
 
-USE registro_estoque;
+USE registroestoque;
+
+DROP TABLE IF EXISTS usuarios_produtos;
+DROP TABLE IF EXISTS usuarios;
+DROP TABLE IF EXISTS cargos;
+DROP TABLE IF EXISTS clientes_produtos;
+DROP TABLE IF EXISTS produtos;
+DROP TABLE IF EXISTS clientes;
+DROP TABLE IF EXISTS empresas;
 
 
 CREATE TABLE IF NOT EXISTS cargos(
-    id_cargo INTEGER PRIMARY KEY AUTO_INCREMENT,
-    nome_cargo ENUM('Vendedor','Estoquista','Secretario'),
+    id_cargo INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    nome_cargo ENUM('Vendedor','Estoquista','Secretario','Gerente','Diretor')
 );
 
 CREATE TABLE IF NOT EXISTS usuarios(
-    id_usuario INTEGER PRIMARY KEY AUTO_INCREMENT,
+    id_usuario INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    id_cargo INTEGER NOT NULL,
     nome VARCHAR(255) NOT NULL,
     endereco VARCHAR(255) NOT NULL,
-    cargo VARCHAR(255) NOT NULL
+    cargo VARCHAR(255) NOT NULL,
     FOREIGN KEY(id_cargo) REFERENCES cargos(id_cargo)
 );
 
+CREATE TABLE IF NOT EXISTS empresas(
+    id_empresa INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    nome_empresa ENUM('Nescau','Nestle','Ouro Fino')
+);
+
 CREATE TABLE IF NOT EXISTS produtos(
-    id_produto INTEGER PRIMARY KEY AUTO_INCREMENT,
+    id_produto INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    id_empresa INTEGER NOT NULL,
     nome_produto VARCHAR(255) NOT NULL,
     preco_compra FLOAT NOT NULL,
     preco_venda FLOAT NOT NULL,
-    quantidade INTEGER NOT NULL
-    FOREIGN KEY(id_empresa) REFERENCES empresa(id_empresa)
-);
-
-CREATE TABLE IF NOT EXISTS empresa(
-    id_empresa INTEGER PRIMARY KEY AUTO_INCREMENT,
-    nome_empresa ENUM('Nescau','Caboclo','Ouro Fino')
+    quantidade INTEGER NOT NULL,
+    FOREIGN KEY(id_empresa) REFERENCES empresas(id_empresa)
 );
 
 CREATE TABLE IF NOT EXISTS clientes(
-    id_cliente INTEGER PRIMARY KEY AUTO_INCREMENT,
+    id_cliente INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
     nome_cliente VARCHAR(255) NOT NULL,
     tipo_documento ENUM('cpf','rg'),
     documento BIGINT
 );
 
 /*Clientes compram mais de um produto e produtos sao comprados por mais de um cliente*/
-CREATE TABLE IF NOT EXISTS clientes_produto(
+CREATE TABLE IF NOT EXISTS clientes_produtos(
     id_cliente INTEGER NOT NULL,
     id_produto INTEGER NOT NULL,
-    FOREIGN KEY(id_cliente) REFERENCES empresa(id_cliente),
-    FOREIGN KEY(id_produto) REFERENCES empresa(id_produto)
+    FOREIGN KEY(id_cliente) REFERENCES clientes(id_cliente),
+    FOREIGN KEY(id_produto) REFERENCES produtos(id_produto)
 );
 
 /*Usuarios vendem mais de um produto e produtos sao vendidos por mais de um usuario*/
-CREATE TABLE IF NOT EXISTS usuarios_produto(
+CREATE TABLE IF NOT EXISTS usuarios_produtos(
     id_usuario INTEGER NOT NULL,
     id_produto INTEGER NOT NULL,
-    FOREIGN KEY(id_usuario) REFERENCES empresa(id_usuario),
-    FOREIGN KEY(id_produto) REFERENCES empresa(id_produto)
+    FOREIGN KEY(id_usuario) REFERENCES usuarios(id_usuario),
+    FOREIGN KEY(id_produto) REFERENCES produtos(id_produto)
+);
+
+/*Inserindo cargos*/
+INSERT INTO 
+    cargos(nome_cargo)
+VALUES
+(
+    'Vendedor'
+),
+(
+    'Estoquista'
+),
+(
+    'Secretario'
+),
+(
+    'Gerente'
+),
+('
+    Diretor'
+);     
+
+SET @idVendedor=(SELECT id_cargo FROM cargos WHERE nome_cargo='Vendedor');   
+SET @idEstoquista=(SELECT id_cargo FROM cargos WHERE nome_cargo='Estoquista');
+SET @idSecretario=(SELECT id_cargo FROM cargos WHERE nome_cargo='Secretario');
+SET @idGerente=(SELECT id_cargo FROM cargos WHERE nome_cargo='Gerente');
+SET @idDiretor=(SELECT id_cargo FROM cargos WHERE nome_cargo='Diretor');
+
+/*Inserindo usuarios*/
+INSERT INTO
+    usuarios(nome, endereco, cargo, id_cargo)
+VALUES 
+(
+    'Giselle Nobrega', 'Rua das estrelas, 455', 'Diretor', @idDiretor
+),
+(
+    'Rodrigo Cruz', 'Avenida Meritti, 1503', 'Estoquista', @idEstoquista
+),
+(
+    'Sarah Witzel', 'Rua Luiz Paz, 54', 'Secretario', @idSecretario
+),
+(
+    'Janette Ferreira', 'Rua Sete de Setembro, Apto 4', 'Gerente', @idGerente
+),
+(
+    'Mauro Tadeu', 'Rua Uvas, Apto 78', 'Vendedor', @idVendedor
+);
+
+SELECT * FROM usuarios;
+
+/*Inserindo empresas*/
+INSERT INTO
+    empresas(nome_empresa)
+VALUES
+(
+    'Nescau'
+),
+(
+    'Nestle'
+),
+(
+    'Ouro Fino'
+);
+
+SET @idNescau = (SELECT id_empresa FROM empresas WHERE nome_empresa='Nescau');
+SET @idNestle= (SELECT id_empresa FROM empresas WHERE nome_empresa='Nestle');
+SET @idOuroFino = (SELECT id_empresa FROM empresas WHERE nome_empresa='Ouro Fino');
+
+/*Inserindo produtos*/
+INSERT INTO 
+    produtos(nome_produto,preco_compra,preco_venda,quantidade, id_empresa)
+VALUES
+(
+    'Cereal', 5.78, 11.84, 530, @idNescau
+),
+(
+    'Sorvete de Flocos 1,5L', 9.47, 22.49, 120, @idNestle
+),
+(
+    'Vermifugo Top Dog', 6.10, 23.60, 50, @idOuroFino
+),
+(
+    'Achocolatado', 1.33, 7.59, 600, @idNescau
+),
+(
+    'Leite Condensado Moça', 8.29, 16.00, 600, @idNestle
+),
+(
+    'Herbalvet Desinfetante', 25.65, 89.90, 50, @idOuroFino
+);
+
+SELECT * FROM produtos;
+
+INSERT INTO
+    clientes(nome_cliente,tipo_documento,documento)
+VALUES
+(
+    'Ana Olivia','cpf', 54800320671
+),
+(
+    'Paulo Garcia','rg', 643102009
+);
+
+INSERT INTO
+    usuarios_produtos(id_usuario,id_produto)
+VALUES
+(
+    (SELECT id_usuario FROM usuarios WHERE usuarios.nome = 'Giselle Nobrega'),
+    (SELECT id_produto FROM produtos WHERE produtos.nome_produto = 'Cereal')
+),
+(
+    (SELECT id_usuario FROM usuarios WHERE usuarios.nome = 'Janette Ferreira'),
+    (SELECT id_produto FROM produtos WHERE produtos.nome_produto = 'Achocolatado')
+),
+(
+    (SELECT id_usuario FROM usuarios WHERE usuarios.nome = 'Rodrigo Cruz'),
+    (SELECT id_produto FROM produtos WHERE produtos.nome_produto = 'Vermifugo Top Dog')
+),
+(
+    (SELECT id_usuario FROM usuarios WHERE usuarios.nome = 'Mauro Tadeu'),
+    (SELECT id_produto FROM produtos WHERE produtos.nome_produto = 'Leite Condensado Moça')
 );
