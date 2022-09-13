@@ -44,7 +44,8 @@ CREATE TABLE IF NOT EXISTS clientes(
     id_cliente INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
     nome_cliente VARCHAR(255) NOT NULL,
     tipo_documento ENUM('cpf','rg'),
-    documento BIGINT
+    documento BIGINT,
+    endereco VARCHAR(255)
 );
 
 /*Clientes compram mais de um produto e produtos sao comprados por mais de um cliente*/
@@ -79,15 +80,16 @@ VALUES
 (
     'Gerente'
 ),
-('
-    Diretor'
-);     
+(
+    'Diretor'
+);
 
-SET @idVendedor=(SELECT id_cargo FROM cargos WHERE nome_cargo='Vendedor');   
-SET @idEstoquista=(SELECT id_cargo FROM cargos WHERE nome_cargo='Estoquista');
-SET @idSecretario=(SELECT id_cargo FROM cargos WHERE nome_cargo='Secretario');
-SET @idGerente=(SELECT id_cargo FROM cargos WHERE nome_cargo='Gerente');
-SET @idDiretor=(SELECT id_cargo FROM cargos WHERE nome_cargo='Diretor');
+SET @idVendedor=(SELECT id_cargo FROM cargos WHERE nome_cargo='Vendedor' LIMIT 1);   
+SET @idEstoquista=(SELECT id_cargo FROM cargos WHERE nome_cargo='Estoquista' LIMIT 1);
+SET @idSecretario=(SELECT id_cargo FROM cargos WHERE nome_cargo='Secretario' LIMIT 1);
+SET @idGerente=(SELECT id_cargo FROM cargos WHERE nome_cargo='Gerente' LIMIT 1);
+SET @idDiretor=(SELECT id_cargo FROM cargos WHERE nome_cargo='Diretor' LIMIT 1);
+
 
 /*Inserindo usuarios*/
 INSERT INTO
@@ -125,9 +127,9 @@ VALUES
     'Ouro Fino'
 );
 
-SET @idNescau = (SELECT id_empresa FROM empresas WHERE nome_empresa='Nescau');
-SET @idNestle= (SELECT id_empresa FROM empresas WHERE nome_empresa='Nestle');
-SET @idOuroFino = (SELECT id_empresa FROM empresas WHERE nome_empresa='Ouro Fino');
+SET @idNescau = (SELECT id_empresa FROM empresas WHERE nome_empresa='Nescau' LIMIT 1);
+SET @idNestle= (SELECT id_empresa FROM empresas WHERE nome_empresa='Nestle' LIMIT 1);
+SET @idOuroFino = (SELECT id_empresa FROM empresas WHERE nome_empresa='Ouro Fino' LIMIT 1);
 
 /*Inserindo produtos*/
 INSERT INTO 
@@ -146,7 +148,7 @@ VALUES
     'Achocolatado', 1.33, 7.59, 600, @idNescau
 ),
 (
-    'Leite Condensado Moça', 8.29, 16.00, 600, @idNestle
+    'Leite Condensado Moca', 8.29, 16.00, 600, @idNestle
 ),
 (
     'Herbalvet Desinfetante', 25.65, 89.90, 50, @idOuroFino
@@ -154,16 +156,18 @@ VALUES
 
 SELECT * FROM produtos;
 
+/*Inserindo clientes*/
 INSERT INTO
-    clientes(nome_cliente,tipo_documento,documento)
+    clientes(nome_cliente,tipo_documento,documento,endereco)
 VALUES
 (
-    'Ana Olivia','cpf', 54800320671
+    'Ana Olivia','cpf', 54800320671,'Rua das girafas listradas'
 ),
 (
-    'Paulo Garcia','rg', 643102009
+    'Paulo Garcia','rg', 643102009,'Rua dos pandas listradas'
 );
 
+/*Inserindo usuarios-produtos*/
 INSERT INTO
     usuarios_produtos(id_usuario,id_produto)
 VALUES
@@ -181,5 +185,34 @@ VALUES
 ),
 (
     (SELECT id_usuario FROM usuarios WHERE usuarios.nome = 'Mauro Tadeu'),
-    (SELECT id_produto FROM produtos WHERE produtos.nome_produto = 'Leite Condensado Moça')
+    (SELECT id_produto FROM produtos WHERE produtos.nome_produto = 'Leite Condensado Moca')
 );
+
+SELECT * FROM usuarios_produtos;
+
+/*Inserindo clientes-produtos*/
+INSERT INTO
+    clientes_produtos(id_cliente,id_produto)
+VALUES
+(
+    (SELECT id_cliente FROM clientes WHERE clientes.nome_cliente = 'Ana Olivia'),
+    (SELECT id_produto FROM produtos WHERE produtos.nome_produto = 'Herbalvet Desinfetante')
+),
+(
+    (SELECT id_cliente FROM clientes WHERE clientes.nome_cliente = 'Ana Olivia'),
+    (SELECT id_produto FROM produtos WHERE produtos.nome_produto = 'Achocolatado')
+),
+(
+    (SELECT id_cliente FROM clientes WHERE clientes.nome_cliente = 'Ana Olivia'),
+    (SELECT id_produto FROM produtos WHERE produtos.nome_produto = 'Sorvete de Flocos 1,5L')
+),
+(
+    (SELECT id_cliente FROM clientes WHERE clientes.nome_cliente = 'Paulo Garcia'),
+    (SELECT id_produto FROM produtos WHERE produtos.nome_produto = 'Sorvete de Flocos 1,5L')
+),
+(
+    (SELECT id_cliente FROM clientes WHERE clientes.nome_cliente = 'Paulo Garcia'),
+    (SELECT id_produto FROM produtos WHERE produtos.nome_produto = 'Leite Condensado Moca')
+);
+
+SELECT * FROM clientes_produtos;
