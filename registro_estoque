@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS clientes(
     nome_cliente VARCHAR(255) NOT NULL,
     tipo_documento ENUM('cpf','rg'),
     documento BIGINT,
+    telefone BIGINT,
     endereco VARCHAR(255)
 );
 
@@ -111,7 +112,6 @@ VALUES
     'Mauro Tadeu', 'Rua Uvas, Apto 78', 'Vendedor', @idVendedor
 );
 
-SELECT * FROM usuarios;
 
 /*Inserindo empresas*/
 INSERT INTO
@@ -158,13 +158,13 @@ SELECT * FROM produtos;
 
 /*Inserindo clientes*/
 INSERT INTO
-    clientes(nome_cliente,tipo_documento,documento,endereco)
+    clientes(nome_cliente,tipo_documento,documento,endereco,telefone)
 VALUES
 (
-    'Ana Olivia','cpf', 54800320671,'Rua das girafas listradas'
+    'Ana Olivia','cpf', 54800320671,'Rua das girafas listradas',41520302116
 ),
 (
-    'Paulo Garcia','rg', 643102009,'Rua dos pandas listradas'
+    'Paulo Garcia','rg', 643102009,'Rua dos pandas listradas',41875001002
 );
 
 /*Inserindo usuarios-produtos*/
@@ -188,7 +188,6 @@ VALUES
     (SELECT id_produto FROM produtos WHERE produtos.nome_produto = 'Leite Condensado Moca')
 );
 
-SELECT * FROM usuarios_produtos;
 
 /*Inserindo clientes-produtos*/
 INSERT INTO
@@ -215,4 +214,29 @@ VALUES
     (SELECT id_produto FROM produtos WHERE produtos.nome_produto = 'Leite Condensado Moca')
 );
 
-SELECT * FROM clientes_produtos;
+SELECT  
+    clientes.nome_cliente,
+    clientes.telefone
+FROM
+    clientes
+WHERE
+    clientes.id_cliente IN(
+        SELECT 
+            clientes_produtos.id_cliente 
+        FROM 
+            clientes_produtos
+        WHERE
+            clientes_produtos.id_produto IN(
+                SELECT
+                    produtos.quantidade
+                FROM
+                    produtos
+                WHERE
+                    produtos.id_empresa IN(
+                        SELECT
+                            empresas.id_empresa
+                        FROM
+                            empresas     
+                    )
+            )
+    ) GROUP BY clientes.nome_cliente LIMIT 3;
