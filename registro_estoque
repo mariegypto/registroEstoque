@@ -202,18 +202,63 @@ VALUES
     (SELECT id_produto FROM produtos WHERE produtos.nome_produto = 'Achocolatado')
 ),
 (
-    (SELECT id_cliente FROM clientes WHERE clientes.nome_cliente = 'Ana Olivia'),
+    (SELECT id_cliente FROM clientes WHERE clientes.nome_cliente = 'Paulo Garcia'),
     (SELECT id_produto FROM produtos WHERE produtos.nome_produto = 'Sorvete de Flocos 1,5L')
 ),
 (
     (SELECT id_cliente FROM clientes WHERE clientes.nome_cliente = 'Paulo Garcia'),
-    (SELECT id_produto FROM produtos WHERE produtos.nome_produto = 'Sorvete de Flocos 1,5L')
+    (SELECT id_produto FROM produtos WHERE produtos.nome_produto = 'Achocolatado')
 ),
 (
     (SELECT id_cliente FROM clientes WHERE clientes.nome_cliente = 'Paulo Garcia'),
     (SELECT id_produto FROM produtos WHERE produtos.nome_produto = 'Leite Condensado Moca')
 );
 
+
+
+/*-----------------1------------------*/
+SELECT 
+    (SELECT 
+        nome_cliente
+    FROM 
+        clientes c 
+    WHERE 
+        c.id_cliente = cp.id_cliente) AS nome_cliente,
+    (SELECT 
+        telefone
+    FROM 
+        clientes c 
+    WHERE 
+        c.id_cliente = cp.id_cliente) AS telefone_cliente,
+    (SELECT 
+        nome_produto
+    FROM 
+        produtos p 
+    WHERE p.id_produto = cp.id_produto) AS nome_produto,
+    (SELECT 
+        quantidade
+    FROM 
+        produtos p 
+    WHERE p.id_produto = cp.id_produto) AS quantidade_produto 
+    FROM 
+        clientes_produtos cp
+    WHERE
+        cp.id_produto IN(
+            SELECT
+                p.id_produto
+            FROM
+                produtos p
+            WHERE
+                p.id_empresa IN(
+                    SELECT
+                        empresas.id_empresa
+                    FROM
+                        empresas     
+                    )
+        )LIMIT 3;
+
+
+/*-----------------2------------------
 SELECT  
     clientes.nome_cliente,
     clientes.telefone
@@ -228,6 +273,8 @@ WHERE
         WHERE
             clientes_produtos.id_produto IN(
                 SELECT
+                    produtos.id_produto,
+                    produtos.nome_produto,
                     produtos.quantidade
                 FROM
                     produtos
@@ -237,6 +284,6 @@ WHERE
                             empresas.id_empresa
                         FROM
                             empresas     
-                    )
+                    ) GROUP BY produtos.quantidade DESC
             )
-    ) GROUP BY clientes.nome_cliente LIMIT 3;
+    )*/
