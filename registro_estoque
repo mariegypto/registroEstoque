@@ -91,7 +91,6 @@ SET @idSecretario=(SELECT id_cargo FROM cargos WHERE nome_cargo='Secretario' LIM
 SET @idGerente=(SELECT id_cargo FROM cargos WHERE nome_cargo='Gerente' LIMIT 1);
 SET @idDiretor=(SELECT id_cargo FROM cargos WHERE nome_cargo='Diretor' LIMIT 1);
 
-
 /*Inserindo usuarios*/
 INSERT INTO
     usuarios(nome, endereco, cargo, id_cargo)
@@ -111,7 +110,6 @@ VALUES
 (
     'Mauro Tadeu', 'Rua Uvas, Apto 78', 'Vendedor', @idVendedor
 );
-
 
 /*Inserindo empresas*/
 INSERT INTO
@@ -148,13 +146,11 @@ VALUES
     'Achocolatado', 1.33, 7.59, 600, @idNescau
 ),
 (
-    'Leite Condensado Moca', 8.29, 16.00, 600, @idNestle
+    'Leite Condensado Moca', 8.29, 16.00, 453, @idNestle
 ),
 (
     'Herbalvet Desinfetante', 25.65, 89.90, 50, @idOuroFino
 );
-
-SELECT * FROM produtos;
 
 /*Inserindo clientes*/
 INSERT INTO
@@ -217,6 +213,8 @@ VALUES
 
 
 /*-----------------1------------------*/
+SELECT 'Questao 1 - SUBSELECT' AS 'INFO';
+
 SELECT 
     (SELECT 
         nome_cliente
@@ -255,35 +253,91 @@ SELECT
                     FROM
                         empresas     
                     )
-        )LIMIT 3;
+        );
 
 
-/*-----------------2------------------
-SELECT  
+/*-----------------2------------------*/
+SELECT 'Questao 2 - SUBSELECT' AS 'INFO';
+
+SELECT 
+    (SELECT 
+        nome_cliente
+    FROM 
+        clientes c 
+    WHERE 
+        c.id_cliente = cp.id_cliente) AS nome_cliente,
+    (SELECT 
+        telefone
+    FROM 
+        clientes c 
+    WHERE 
+        c.id_cliente = cp.id_cliente) AS telefone_cliente,
+    (SELECT 
+        nome_produto
+    FROM 
+        produtos p 
+    WHERE p.id_produto = cp.id_produto) AS nome_produto,
+    (SELECT 
+        quantidade
+    FROM 
+        produtos p 
+    WHERE p.id_produto = cp.id_produto) AS quantidade_produto 
+    FROM 
+        clientes_produtos cp
+   
+    WHERE
+        cp.id_produto IN(
+            SELECT
+                p.id_produto
+            FROM
+                produtos p
+            WHERE
+                p.id_empresa IN(
+                    SELECT
+                        empresas.id_empresa
+                    FROM
+                        empresas     
+                    )
+        ) ORDER BY quantidade_produto DESC;
+
+/*-----------------3------------------*/
+
+SELECT 'Questao 3 - INNER JOIN' AS 'INFO';
+
+SELECT
     clientes.nome_cliente,
-    clientes.telefone
+    clientes.telefone,
+    produtos.nome_produto,
+    produtos.quantidade,
+    produtos.preco_compra,
+    empresas.nome_empresa
 FROM
     clientes
-WHERE
-    clientes.id_cliente IN(
-        SELECT 
-            clientes_produtos.id_cliente 
-        FROM 
-            clientes_produtos
-        WHERE
-            clientes_produtos.id_produto IN(
-                SELECT
-                    produtos.id_produto,
-                    produtos.nome_produto,
-                    produtos.quantidade
-                FROM
-                    produtos
-                WHERE
-                    produtos.id_empresa IN(
-                        SELECT
-                            empresas.id_empresa
-                        FROM
-                            empresas     
-                    ) GROUP BY produtos.quantidade DESC
-            )
-    )*/
+INNER JOIN
+    clientes_produtos ON clientes.id_cliente=clientes_produtos.id_cliente
+INNER JOIN
+    produtos ON produtos.id_produto=clientes_produtos.id_produto
+INNER JOIN  
+    empresas ON empresas.id_empresa=produtos.id_empresa
+ORDER BY produtos.preco_compra DESC;
+
+/*-----------------4------------------*/
+
+SELECT 'Questao 4 - INNER JOIN' AS 'INFO';
+
+SELECT
+    clientes.nome_cliente,
+    clientes.telefone,
+    produtos.nome_produto,
+    produtos.quantidade,
+    produtos.preco_compra,
+    empresas.nome_empresa
+FROM
+    clientes
+LEFT JOIN
+    clientes_produtos ON clientes.id_cliente=clientes_produtos.id_cliente
+INNER JOIN
+    produtos ON produtos.id_produto=clientes_produtos.id_produto
+INNER JOIN  
+    empresas ON empresas.id_empresa=produtos.id_empresa
+ORDER BY produtos.preco_compra DESC;
