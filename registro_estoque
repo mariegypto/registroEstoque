@@ -323,7 +323,7 @@ ORDER BY produtos.preco_compra DESC;
 
 /*-----------------4------------------*/
 
-SELECT 'Questao 4 - INNER JOIN' AS 'INFO';
+SELECT 'Questao 4 - LEFT JOIN' AS 'INFO';
 
 SELECT
     clientes.nome_cliente,
